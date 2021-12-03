@@ -8,7 +8,9 @@ defmodule ReadInput do
       if match?(:error, result) do
         raise "Unable to parse input as a number: #{string}"
       end
-      result
+
+      {num, ""} = result
+      num
     end)
   end
 end
