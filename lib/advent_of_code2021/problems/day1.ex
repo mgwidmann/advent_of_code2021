@@ -1,6 +1,6 @@
 defmodule AdventOfCode2021.Day1 do
 
-  @spec count_depth_increases(nonempty_list, number | nil, number) :: no_return
+  @spec count_depth_increases(nonempty_list, number | nil, number) :: number
   def count_depth_increases(list, prev \\ nil, increases \\ 0)
   def count_depth_increases([depth | rest], nil, increases) do
     count_depth_increases(rest, depth, increases)
