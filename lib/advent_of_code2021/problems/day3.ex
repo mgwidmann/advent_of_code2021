@@ -1,6 +1,31 @@
 defmodule AdventOfCode2021.Day3 do
-  @type counts() ::
-          tuple()
+  @type counts() :: tuple()
+
+  def rating(sums, report, type \\ :most) do
+    rating(sums, report, type, byte_size(hd(report)), 0)
+  end
+
+  def rating(_, [rating], _, _, _), do: rating
+
+  def rating({sums, count}, report, type, binary_size, position) when position < binary_size do
+    keep =
+      case {elem(sums, position), count / 2, type} do
+        {n, mid, :most} when n >= mid -> "1"
+        {_, _, :most} -> "0"
+        {n, mid, :least} when n >= mid -> "0"
+        {_, _, :least} -> "1"
+      end
+
+    new_report =
+      report
+      |> Enum.filter(fn e ->
+        v = String.at(e, position)
+        v == keep
+      end)
+
+    new_sums = most_least_common(new_report)
+    rating(new_sums, new_report, type, binary_size, position + 1)
+  end
 
   @spec most_least_common([String.t()], non_neg_integer(), counts()) :: {binary, binary}
   def most_least_common(report, count \\ 0, sums \\ {})
@@ -10,12 +35,17 @@ defmodule AdventOfCode2021.Day3 do
   end
 
   def most_least_common([], count, sums) do
-    most = sums
-    |> Tuple.to_list()
-    |> Enum.map(fn total ->
-      if(total > count / 2, do: "1", else: "0")
-    end)
-    |> Enum.join("")
+    {sums, count}
+  end
+
+  def to_binary({sums, count}) do
+    most =
+      sums
+      |> Tuple.to_list()
+      |> Enum.map(fn total ->
+        if(total > count / 2, do: "1", else: "0")
+      end)
+      |> Enum.join("")
 
     {most, invert(most)}
   end
@@ -34,7 +64,7 @@ defmodule AdventOfCode2021.Day3 do
   def add(string, sums, n \\ 0)
 
   def add("1" <> rest, sums, n) do
-    val = ((sums |> Tuple.to_list() |> Enum.at(n)) || 0) |> Kernel.+(1)
+    val = (sums |> Tuple.to_list() |> Enum.at(n) || 0) |> Kernel.+(1)
     add(rest, insert(sums, n, val), n + 1)
   end
 
@@ -45,6 +75,7 @@ defmodule AdventOfCode2021.Day3 do
   def add("", sums, _), do: sums
 
   def insert(sums, n, val \\ nil)
+
   def insert(sums, n, val) do
     if val do
       update_fn = if(tuple_size(sums) <= n, do: &Tuple.insert_at/3, else: &Kernel.put_elem/3)
